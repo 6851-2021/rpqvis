@@ -6,7 +6,7 @@ class Window:
     def __init__(self):
         self.crossids = set()
         self.upids = set()
-        self.insertmode = True
+        self.mode = "insert"
 
         self.linedotid = {}
 
@@ -16,7 +16,9 @@ class Window:
         self.window.geometry("600x300")
         self.canvas = tk.Canvas(self.window, width=700, height=300)
         self.canvas.bind("<Button-1>", self.clicked)
-        self.window.bind("<m>", self.toggle)
+        self.window.bind("<d>", self.toggle)
+        self.window.bind("<i>", self.toggle)
+        self.window.bind("<q>", self.toggle)
         self.canvas.pack()
 
         self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
@@ -25,11 +27,26 @@ class Window:
        
         self.canvas.bind('<Motion>', self.motion)
         self.last_highlight = -1
+
+
+
+
+
         self.window.mainloop()
-        
+
+
+    def query(self, t):
+        existlist = []
+        for line in self.crossids:
+            c = self.canvas.coords(line)
+            if c[2] > t and c[0] <= t:
+                existlist.append(270- c[1])
+
+        return sorted(existlist)
+
 
     def motion(self, event):
-        if not self.insertmode:
+        if self.mode == "delete":
             t, y = event.x, event.y
             if y >= 270:
                 closest = -1
@@ -75,16 +92,23 @@ class Window:
 
 
     def clicked(self, event):
-        if self.insertmode:
+        if self.mode == "query":
+            print(self.query(event.x))
+        elif self.mode == "insert":
             self.insert(event.x, event.y)
-        else:
+        elif self.mode == "delete":
             self.delete(event.x, event.y)
 
     def toggle(self, event):
         if time.time() - self.last_toggle > .1:
+            print(event.keysym)
             self.last_toggle = time.time()
-            self.insertmode = not self.insertmode
-            print("toggled", self.insertmode)
+            if event.keysym == "d":
+                self.mode = "delete"
+            elif event.keysym == "i":
+                self.mode = "insert"
+            elif event.keysym == "q":
+                self.mode = "query"
             if self.last_highlight != -1:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
             self.last_highlight = -1
