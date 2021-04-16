@@ -201,31 +201,35 @@ class Window:
         if y >= 270:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
-                c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
-                self.canvas.delete(self.pairs[self.last_highlight])
-                self.canvas.delete(self.linedotid[self.pairs[self.last_highlight]])
-                del self.linedotid[self.pairs[self.last_highlight]]
                 self.upids.remove(self.last_highlight)
-                self.crossids.remove(self.pairs[self.last_highlight])
-                del self.pairs[self.pairs[self.last_highlight]]
-                del self.pairs[self.last_highlight]
+                if self.last_highlight in self.pairs:
+                    c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
+                    self.canvas.delete(self.pairs[self.last_highlight])
+                    self.canvas.delete(self.linedotid[self.pairs[self.last_highlight]])
+                    del self.linedotid[self.pairs[self.last_highlight]]
+                    self.crossids.remove(self.pairs[self.last_highlight])
+                    del self.pairs[self.pairs[self.last_highlight]]
+                    del self.pairs[self.last_highlight]
+                    self.insert(c_to_replace[0], c_to_replace[1])
                 self.last_highlight = -1
-                self.insert(c_to_replace[0], c_to_replace[1])
                 
         # Delete an insert
         else:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
-                c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
-                self.canvas.delete(self.pairs[self.last_highlight])
                 self.canvas.delete(self.linedotid[self.last_highlight])
                 del self.linedotid[self.last_highlight]
                 self.crossids.remove(self.last_highlight)
-                self.upids.remove(self.pairs[self.last_highlight])
-                del self.pairs[self.pairs[self.last_highlight]]
-                del self.pairs[self.last_highlight]
+                if self.last_highlight in self.pairs:
+                    print(self.last_highlight)
+                    print(self.pairs)
+                    c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
+                    self.canvas.delete(self.pairs[self.last_highlight])
+                    self.upids.remove(self.pairs[self.last_highlight])
+                    del self.pairs[self.pairs[self.last_highlight]]
+                    del self.pairs[self.last_highlight]
+                    self.insert(c_to_replace[0], c_to_replace[1])
                 self.last_highlight = -1
-                self.insert(c_to_replace[0], c_to_replace[1])
 
 
 
