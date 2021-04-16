@@ -46,6 +46,7 @@ class Window:
 
 
     def motion(self, event):
+        # color changes on hover, for "Delete" events only
         if self.mode == "delete":
             t, y = event.x, event.y
             if y >= 270:
@@ -114,6 +115,8 @@ class Window:
             self.last_highlight = -1
 
     def insert(self, t, y):
+        # "Insert" of a delete-min event of value y at time t
+
         # delete min
         if y >= 270:
             miny = -1
@@ -127,6 +130,11 @@ class Window:
 
             id = self.canvas.create_line(t, 270, t, miny, arrow=tk.LAST)
             self.upids.add(id)
+
+            if miny < 0:
+                print("No min to delete")
+                return
+
             c = self.canvas.coords(minid)
             self.canvas.coords(minid, c[0], c[1], t-1, c[3])
 
