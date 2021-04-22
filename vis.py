@@ -4,6 +4,9 @@ import time
 
 class Window:
     def __init__(self):
+        
+
+
         self.crossids = set()
         self.upids = set()
         self.mode = "insert"
@@ -14,23 +17,22 @@ class Window:
         self.window = tk.Tk()
 
         self.window.geometry("600x300")
-        self.canvas = tk.Canvas(self.window, width=700, height=300)
+        self.canvas = tk.Canvas(self.window, width=600, height=300)
         self.canvas.bind("<Button-1>", self.clicked)
         self.window.bind("<d>", self.toggle)
         self.window.bind("<i>", self.toggle)
         self.window.bind("<q>", self.toggle)
+        self.window.bind("<Configure>", self.resize)
         self.canvas.pack()
 
-        self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
+        self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
 
         self.pairs = dict()
        
         self.canvas.bind('<Motion>', self.motion)
         self.last_highlight = -1
-
-
-
-
+        self.w = 600
+        self.h = 300
 
         self.window.mainloop()
 
@@ -44,12 +46,23 @@ class Window:
 
         return sorted(existlist)
 
+    def resize(self, event):
+        self.canvas.addtag_all("all")
+        rw = float(event.width)/self.w
+        rh = float(event.height)/self.h
+        self.w = event.width
+        self.h = event.height
+        # resize the canvas 
+        self.canvas.config(width=self.w, height=self.h)
+        # rescale all the objects tagged with the "all" tag
+        self.canvas.scale("all", 0, 0, rw, rh)
+
 
     def motion(self, event):
         # color changes on hover, for "Delete" events only
         if self.mode == "delete":
             t, y = event.x, event.y
-            if y >= 270:
+            if y >= 9/10*self.h:
                 closest = -1
                 dist = float('inf')
                 for line in self.upids:
@@ -93,6 +106,9 @@ class Window:
 
 
     def clicked(self, event):
+        # avoid drawing lines too close to edge
+        if (event.x < 24 or event.x > self.w - 24) and (event.y < 24 or event.y > self.h - 24):
+            return
         if self.mode == "query":
             print(self.query(event.x))
         elif self.mode == "insert":
@@ -118,7 +134,10 @@ class Window:
         # "Insert" of a delete-min event of value y at time t
 
         # delete min
-        if y >= 270:
+        print(t)
+        print(y)
+        print(self.h)
+        if y >= 9/10*self.h:
             miny = -1
             minid = -1
             for line in self.crossids:
@@ -128,7 +147,7 @@ class Window:
                         miny = c[1]
                         minid = line
 
-            id = self.canvas.create_line(t, 270, t, miny, arrow=tk.LAST)
+            id = self.canvas.create_line(t, 9/10*self.h, t, miny, arrow=tk.LAST)
             self.upids.add(id)
 
             if miny < 0:
@@ -154,7 +173,7 @@ class Window:
 
         #insert line
         else:
-            mint = 601
+            mint = self.w + 1
             minid = -1
             for line in self.upids:
                 c = self.canvas.coords(line)
@@ -165,7 +184,7 @@ class Window:
             
             # doesn't cross a line
             if minid == -1:
-                id = self.canvas.create_line(t, y, 600, y, arrow=tk.LAST)
+                id = self.canvas.create_line(t, y, self.w, y, arrow=tk.LAST)
                 id2 = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill="black")
                 self.crossids.add(id)
                 self.linedotid[id] = id2
@@ -198,7 +217,7 @@ class Window:
 
     def delete(self, t, y):
         # Delete a deletemin
-        if y >= 270:
+        if y >= 9/10*self.h:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
                 self.upids.remove(self.last_highlight)
