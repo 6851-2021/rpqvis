@@ -14,6 +14,7 @@ class Window:
         self.linedotid = {}
 
         self.last_toggle = 0
+        self.query_id = None
         self.window = tk.Tk()
 
         self.window.geometry("600x300")
@@ -59,8 +60,20 @@ class Window:
 
 
     def motion(self, event):
+        if self.query_id is not None:
+            self.canvas.delete(self.query_id)
+
+        if self.mode == "query":
+            curr_queue = self.query(event.x)
+            curr_min = 0
+            # TODO: magic numbers here, remove when resize done
+            if len(curr_queue) > 0:
+                curr_min = 270 - curr_queue[0]
+            self.query_id = self.canvas.create_line(event.x, 9/10*self.h, event.x, curr_min, arrow=tk.LAST)
+            self.canvas.itemconfig(self.query_id, fill='green')
+
         # color changes on hover, for "Delete" events only
-        if self.mode == "delete":
+        elif self.mode == "delete":
             t, y = event.x, event.y
             if y >= 9/10*self.h:
                 closest = -1
