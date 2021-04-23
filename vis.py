@@ -1,10 +1,6 @@
 import tkinter as tk
-import math
 import time
 
-
-# min size (don't go below 100/50)
-# disallow repeat coords
 
 class Window:
     def __init__(self):
@@ -28,6 +24,7 @@ class Window:
         self.window = tk.Tk()
 
         self.window.geometry("600x300")
+        self.window.minsize(300, 150)
         self.canvas = tk.Canvas(self.window, width=600, height=300)
         self.canvas.bind("<Button-1>", self.clicked)
         self.window.bind("<d>", self.toggle)
@@ -197,7 +194,6 @@ class Window:
     def insert(self, t, y):
         # don't allow same coords
         if t in self.taken_x or y in self.taken_y:
-            print("here6")
             return
 
         # delete min
@@ -218,15 +214,11 @@ class Window:
             self.taken_x.add(t)
             self.line_quantized_coords[minid][2] = t
             self.scale_line(minid)
-            print("here4")
             # need to propagate
             if minid in self.pairs:
-                print("here5")
                 c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                 self.canvas.delete(self.pairs[minid])
                 del self.line_quantized_coords[self.pairs[minid]]
-                print(self.taken_y)
-                print(self.line_quantized_coords)
                 self.taken_x.remove(c_to_replace[0])
 
                 self.upids.remove(self.pairs[minid])
@@ -252,7 +244,6 @@ class Window:
             
             # doesn't cross a line
             if minid == -1:
-                print("here1")
                 id = self.display_line(t, y, self.horizontal_space, y)
                 self.line_quantized_coords[id] = [t, y, self.horizontal_space, y]
                 id2 = self.display_dot(t, y)
@@ -264,7 +255,6 @@ class Window:
 
             # crosses a line
             else:
-                print("here2")
                 id = self.display_line(t, y, mint, y)
                 id2 = self.display_dot(t, y)
                 self.line_quantized_coords[id] = [t, y, mint, y]
@@ -278,7 +268,6 @@ class Window:
 
                 # need to propagate
                 if minid in self.pairs:
-                    print("here3")
                     c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                     self.canvas.delete(self.pairs[minid])
                     del self.line_quantized_coords[self.pairs[minid]]
