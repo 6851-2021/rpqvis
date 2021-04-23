@@ -2,6 +2,10 @@ import tkinter as tk
 import math
 import time
 
+
+# min size (don't go below 100/50)
+# disallow repeat coords
+
 class Window:
     def __init__(self):
         self.vertical_space = 50
@@ -119,7 +123,6 @@ class Window:
     def motion(self, event):
         if self.mode == "delete":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
-            print(t, y)
             if y >= 9/10*self.vertical_space:
                 closest = -1
                 dist = float('inf')
@@ -192,14 +195,15 @@ class Window:
             self.last_highlight = -1
 
     def insert(self, t, y):
+        # don't allow same coords
+        if t in self.taken_x or y in self.taken_y:
+            print("here6")
+            return
+
         # delete min
-        print(t)
-        print(y)
-        print(self.h)
         if y >= 9/10*self.vertical_space:
             miny = -1
             minid = -1
-            print(self.line_quantized_coords)
             for line in self.crossids:
                 c = self.line_quantized_coords[line]
                 if c[0] <= t and c[2]>=t:
@@ -211,14 +215,19 @@ class Window:
             self.upids.add(id)
             self.line_quantized_coords[id] = [t, round(9.5/10*self.vertical_space), t, miny]
             c = self.line_quantized_coords[minid]
+            self.taken_x.add(t)
             self.line_quantized_coords[minid][2] = t
             self.scale_line(minid)
-
+            print("here4")
             # need to propagate
             if minid in self.pairs:
+                print("here5")
                 c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                 self.canvas.delete(self.pairs[minid])
                 del self.line_quantized_coords[self.pairs[minid]]
+                print(self.taken_y)
+                print(self.line_quantized_coords)
+                self.taken_x.remove(c_to_replace[0])
 
                 self.upids.remove(self.pairs[minid])
                 del self.pairs[self.pairs[minid]]
@@ -243,26 +252,33 @@ class Window:
             
             # doesn't cross a line
             if minid == -1:
+                print("here1")
                 id = self.display_line(t, y, self.horizontal_space, y)
                 self.line_quantized_coords[id] = [t, y, self.horizontal_space, y]
                 id2 = self.display_dot(t, y)
                 self.crossids.add(id)
                 self.dot_quantized_coords[id2] = [t, y]
                 self.linedotid[id] = id2
+                self.taken_x.add(t)
+                self.taken_y.add(y)
 
             # crosses a line
             else:
+                print("here2")
                 id = self.display_line(t, y, mint, y)
                 id2 = self.display_dot(t, y)
                 self.line_quantized_coords[id] = [t, y, mint, y]
                 self.crossids.add(id)
                 self.linedotid[id] = id2
+                self.taken_x.add(t)
+                self.taken_y.add(y)
                 self.dot_quantized_coords[id2] = [t, y]
                 self.line_quantized_coords[minid][3] = y
                 self.scale_line(minid)
 
                 # need to propagate
                 if minid in self.pairs:
+                    print("here3")
                     c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                     self.canvas.delete(self.pairs[minid])
                     del self.line_quantized_coords[self.pairs[minid]]
@@ -270,6 +286,8 @@ class Window:
                     self.canvas.delete(self.linedotid[self.pairs[minid]])
                     del self.dot_quantized_coords[self.linedotid[self.pairs[minid]]]
                     del self.linedotid[self.pairs[minid]]
+                    self.taken_x.remove(c_to_replace[0])
+                    self.taken_y.remove(c_to_replace[1])
                     
                     self.crossids.remove(self.pairs[minid])
                     del self.pairs[self.pairs[minid]]
@@ -294,7 +312,7 @@ class Window:
                 del self.line_quantized_coords[self.pairs[self.last_highlight]]
                 self.canvas.delete(self.linedotid[self.pairs[self.last_highlight]])
                 del self.linedotid[self.pairs[self.last_highlight]]
-
+                self.taken_x.remove(c_to_replace[0])
 
                 self.upids.remove(self.last_highlight)
                 self.crossids.remove(self.pairs[self.last_highlight])
@@ -319,17 +337,23 @@ class Window:
                     del self.pairs[self.pairs[self.last_highlight]]
                     del self.pairs[self.last_highlight]
                     self.last_highlight = -1
+                    self.taken_x.remove(c_to_replace[0])
+                    self.taken_y.remove(c_to_replace[1])
                     self.insert(c_to_replace[0], c_to_replace[1])
 
                 # doesn't have pair
                 else:
                     self.canvas.delete(self.last_highlight)
+                    c = self.line_quantized_coords[self.last_highlight]
+                    self.taken_x.remove(c[0])
+                    self.taken_y.remove(c[1])
                     del self.line_quantized_coords[self.last_highlight]
 
                     self.canvas.delete(self.linedotid[self.last_highlight])
                     del self.dot_quantized_coords[self.linedotid[self.last_highlight]]
                     del self.linedotid[self.last_highlight]
                     self.crossids.remove(self.last_highlight)
+                    
                     
                     self.last_highlight = -1
 
