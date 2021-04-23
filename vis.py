@@ -4,12 +4,11 @@ import time
 
 class Window:
     def __init__(self):
-        
-
 
         self.crossids = set()
         self.upids = set()
         self.mode = "insert"
+        self.step = False
 
         self.linedotid = {}
 
@@ -23,13 +22,14 @@ class Window:
         self.window.bind("<d>", self.toggle)
         self.window.bind("<i>", self.toggle)
         self.window.bind("<q>", self.toggle)
+        self.window.bind("<s>", self.toggle)
         self.window.bind("<Configure>", self.resize)
         self.canvas.pack()
 
         self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
 
         self.pairs = dict()
-       
+
         self.canvas.bind('<Motion>', self.motion)
         self.last_highlight = -1
         self.w = 600
@@ -89,13 +89,13 @@ class Window:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     elif self.last_highlight == -1:
                         self.canvas.itemconfig(closest, fill='red')
-                    
+ 
                     self.last_highlight = closest
                 else:
                     if self.last_highlight != -1:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     self.last_highlight = -1
-            
+ 
             else:
                 closest = -1
                 dist = float('inf')
@@ -139,6 +139,9 @@ class Window:
                 self.mode = "insert"
             elif event.keysym == "q":
                 self.mode = "query"
+            elif event.keysym == "s":
+                self.step = not self.step
+                print("step-through: ", self.step)
             if self.last_highlight != -1:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
             self.last_highlight = -1
@@ -179,7 +182,10 @@ class Window:
                 
                 self.pairs[id] = minid
                 self.pairs[minid] = id
-                self.insert(c_to_replace[0], c_to_replace[1])
+                if self.step:
+                    self.canvas.after(100, lambda: self.insert(c_to_replace[0], c_to_replace[1]))
+                else:
+                    self.insert(c_to_replace[0], c_to_replace[1])
             else:
                 self.pairs[id] = minid
                 self.pairs[minid] = id
@@ -194,7 +200,7 @@ class Window:
                     if c[0] < mint and c[0] > t:
                         mint = c[0]
                         minid = line
-            
+
             # doesn't cross a line
             if minid == -1:
                 id = self.canvas.create_line(t, y, self.w, y, arrow=tk.LAST)
@@ -221,7 +227,10 @@ class Window:
                     del self.pairs[self.pairs[minid]]
                     self.pairs[id] = minid
                     self.pairs[minid] = id
-                    self.insert(c_to_replace[0], c_to_replace[1])
+                    if self.step:
+                        self.canvas.after(100, lambda: self.insert(c_to_replace[0], c_to_replace[1]))
+                    else:
+                        self.insert(c_to_replace[0], c_to_replace[1])
                 else:
                     self.pairs[id] = minid
                     self.pairs[minid] = id
@@ -242,9 +251,12 @@ class Window:
                     self.crossids.remove(self.pairs[self.last_highlight])
                     del self.pairs[self.pairs[self.last_highlight]]
                     del self.pairs[self.last_highlight]
-                    self.insert(c_to_replace[0], c_to_replace[1])
+                    if self.step:
+                        self.canvas.after(100, lambda: self.insert(c_to_replace[0], c_to_replace[1]))
+                    else:
+                        self.insert(c_to_replace[0], c_to_replace[1])
                 self.last_highlight = -1
-                
+
         # Delete an insert
         else:
             if self.last_highlight != -1:
@@ -260,9 +272,11 @@ class Window:
                     self.upids.remove(self.pairs[self.last_highlight])
                     del self.pairs[self.pairs[self.last_highlight]]
                     del self.pairs[self.last_highlight]
-                    self.insert(c_to_replace[0], c_to_replace[1])
+                    if self.step:
+                        self.canvas.after(100, lambda: self.insert(c_to_replace[0], c_to_replace[1]))
+                    else:
+                        self.insert(c_to_replace[0], c_to_replace[1])
                 self.last_highlight = -1
-
 
 
 Window()
