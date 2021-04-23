@@ -4,14 +4,21 @@ import time
 
 class Window:
     def __init__(self):
-        
-
+        self.vertical_space = 50
+        self.horizontal_space = 100
 
         self.crossids = set()
         self.upids = set()
         self.mode = "insert"
 
         self.linedotid = {}
+
+        self.line_quantized_coords = {}
+        self.dot_quantized_coords = {}
+
+        # no lines allowed on same coordinates
+        self.taken_x = set()
+        self.taken_y = set()
 
         self.last_toggle = 0
         self.window = tk.Tk()
@@ -26,7 +33,7 @@ class Window:
         self.canvas.pack()
 
         self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
-
+        self.canvas.addtag_all("all")
         self.pairs = dict()
        
         self.canvas.bind('<Motion>', self.motion)
@@ -36,37 +43,89 @@ class Window:
 
         self.window.mainloop()
 
+    def quantize(self, t, y, w, h):
+        qt = round(t/w*self.horizontal_space)
+        qy = round(y/h*self.vertical_space)
+        return qt, qy
+
+    def quantize_line(self, c, w, h):
+        pt1 = self.quantize(c[0], c[1], w, h)
+        pt2 = self.quantize(c[2], c[3], w, h)
+        return (pt1[0], pt1[1], pt2[0], pt2[1])
+
+    def unquantize(self, qt, qy, w, h):
+        t = round(qt/self.horizontal_space*w)
+        y = round(qy/self.vertical_space*h)
+        return t, y
+
+    def display_line(self, qt1, qy1, qt2, qy2):
+        t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
+        t2, y2 = self.unquantize(qt2, qy2, self.w, self.h)
+
+        id = self.canvas.create_line(t1, y1, t2, y2, arrow=tk.LAST)
+        return id
+
+    def display_dot(self, qt, qy):
+        t, y = self.unquantize(qt, qy, self.w, self.h)
+        id = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill="black")
+        return id
+
+    def scale_line(self, id):
+        c = self.line_quantized_coords[id]
+        pt1 = self.unquantize(c[0], c[1], self.w, self.h)
+        pt2 = self.unquantize(c[2], c[3], self.w, self.h)
+        
+        self.canvas.coords(id, pt1[0], pt1[1], pt2[0], pt2[1])
+
+    def scale_dot(self, id):
+        c = self.dot_quantized_coords[id]
+        pt1 = self.unquantize(c[0], c[1], self.w, self.h)
+        self.canvas.coords(id, pt1[0]+3, pt1[1]+3, pt1[0]-3, pt1[1]-3)
+
 
     def query(self, t):
         existlist = []
         for line in self.crossids:
-            c = self.canvas.coords(line)
+            c = self.line_quantized_coords[line]
             if c[2] > t and c[0] <= t:
-                existlist.append(270- c[1])
+                existlist.append(self.vertical_space - c[1])
 
         return sorted(existlist)
 
     def resize(self, event):
-        self.canvas.addtag_all("all")
+        
         rw = float(event.width)/self.w
         rh = float(event.height)/self.h
-        self.w = event.width
-        self.h = event.height
+        
         # resize the canvas 
-        self.canvas.config(width=self.w, height=self.h)
+        self.canvas.config(width=event.width, height=event.height)
         # rescale all the objects tagged with the "all" tag
         self.canvas.scale("all", 0, 0, rw, rh)
+
+        self.w = event.width
+        self.h = event.height
+
+        for line in self.crossids:
+            self.scale_line(line)
+
+        for line in self.upids:
+            self.scale_line(line)
+
+        for k in self.linedotid:
+            dot = self.linedotid[k]
+            self.scale_dot(dot)
 
 
     def motion(self, event):
         if self.mode == "delete":
-            t, y = event.x, event.y
-            if y >= 9/10*self.h:
+            t, y = self.quantize(event.x, event.y, self.w, self.h)
+            print(t, y)
+            if y >= 9/10*self.vertical_space:
                 closest = -1
                 dist = float('inf')
                 for line in self.upids:
-                    c = self.canvas.coords(line)
-                    if c[0] <= t+4 and c[0]>=t-4:
+                    c = self.line_quantized_coords[line]
+                    if c[0] <= t+1 and c[0]>=t-1:
                         if abs(t-c[0]) < dist:
                             closest = line
                             dist = abs(t-c[0])
@@ -86,8 +145,8 @@ class Window:
                 closest = -1
                 dist = float('inf')
                 for line in self.crossids:
-                    c = self.canvas.coords(line)
-                    if c[1] <= y+4 and c[1]>=y-4 and c[0] <= t and c[2] >= t:
+                    c = self.line_quantized_coords[line]
+                    if c[1] <= y+1 and c[1]>=y-1 and c[0] <= t and c[2] >= t:
                         if abs(y-c[1]) < dist:
                             closest = line
                             dist = abs(y-c[1])
@@ -105,15 +164,18 @@ class Window:
 
 
     def clicked(self, event):
+        x, y = self.quantize(event.x, event.y, self.w, self.h)
+
         # avoid drawing lines too close to edge
-        if (event.x < 24 or event.x > self.w - 24) and (event.y < 24 or event.y > self.h - 24):
+        if (x < 4 or x > self.horizontal_space-4) and (y < 4 or y > self.vertical_space - 4) and (event.x < 24 or event.x > self.w - 24) and (event.y < 24 or event.y > self.h - 24):
             return
+
         if self.mode == "query":
-            print(self.query(event.x))
+            print(self.query(x))
         elif self.mode == "insert":
-            self.insert(event.x, event.y)
+            self.insert(x, y)
         elif self.mode == "delete":
-            self.delete(event.x, event.y)
+            self.delete(x, y)
 
     def toggle(self, event):
         if time.time() - self.last_toggle > .1:
@@ -134,25 +196,30 @@ class Window:
         print(t)
         print(y)
         print(self.h)
-        if y >= 9/10*self.h:
+        if y >= 9/10*self.vertical_space:
             miny = -1
             minid = -1
+            print(self.line_quantized_coords)
             for line in self.crossids:
-                c = self.canvas.coords(line)
+                c = self.line_quantized_coords[line]
                 if c[0] <= t and c[2]>=t:
                     if c[1] > miny:
                         miny = c[1]
                         minid = line
 
-            id = self.canvas.create_line(t, 9/10*self.h, t, miny, arrow=tk.LAST)
+            id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
             self.upids.add(id)
-            c = self.canvas.coords(minid)
-            self.canvas.coords(minid, c[0], c[1], t-1, c[3])
+            self.line_quantized_coords[id] = [t, round(9.5/10*self.vertical_space), t, miny]
+            c = self.line_quantized_coords[minid]
+            self.line_quantized_coords[minid][2] = t
+            self.scale_line(minid)
 
             # need to propagate
             if minid in self.pairs:
-                c_to_replace = self.canvas.coords(self.pairs[minid])
+                c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                 self.canvas.delete(self.pairs[minid])
+                del self.line_quantized_coords[self.pairs[minid]]
+
                 self.upids.remove(self.pairs[minid])
                 del self.pairs[self.pairs[minid]]
                 
@@ -168,7 +235,7 @@ class Window:
             mint = self.w + 1
             minid = -1
             for line in self.upids:
-                c = self.canvas.coords(line)
+                c = self.line_quantized_coords[line]
                 if c[3] <= y and c[1]>=y:
                     if c[0] < mint and c[0] > t:
                         mint = c[0]
@@ -176,26 +243,34 @@ class Window:
             
             # doesn't cross a line
             if minid == -1:
-                id = self.canvas.create_line(t, y, self.w, y, arrow=tk.LAST)
-                id2 = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill="black")
+                id = self.display_line(t, y, self.horizontal_space, y)
+                self.line_quantized_coords[id] = [t, y, self.horizontal_space, y]
+                id2 = self.display_dot(t, y)
                 self.crossids.add(id)
+                self.dot_quantized_coords[id2] = [t, y]
                 self.linedotid[id] = id2
 
             # crosses a line
             else:
-                id = self.canvas.create_line(t, y, mint-1, y, arrow=tk.LAST)
-                id2 = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill="black")
+                id = self.display_line(t, y, mint, y)
+                id2 = self.display_dot(t, y)
+                self.line_quantized_coords[id] = [t, y, mint, y]
                 self.crossids.add(id)
                 self.linedotid[id] = id2
-                c = self.canvas.coords(minid)
-                self.canvas.coords(minid, c[0], c[1], c[2], y)
+                self.dot_quantized_coords[id2] = [t, y]
+                self.line_quantized_coords[minid][3] = y
+                self.scale_line(minid)
 
                 # need to propagate
                 if minid in self.pairs:
-                    c_to_replace = self.canvas.coords(self.pairs[minid])
+                    c_to_replace = self.line_quantized_coords[self.pairs[minid]]
                     self.canvas.delete(self.pairs[minid])
+                    del self.line_quantized_coords[self.pairs[minid]]
+
                     self.canvas.delete(self.linedotid[self.pairs[minid]])
+                    del self.dot_quantized_coords[self.linedotid[self.pairs[minid]]]
                     del self.linedotid[self.pairs[minid]]
+                    
                     self.crossids.remove(self.pairs[minid])
                     del self.pairs[self.pairs[minid]]
                     self.pairs[id] = minid
@@ -209,13 +284,18 @@ class Window:
 
     def delete(self, t, y):
         # Delete a deletemin
-        if y >= 9/10*self.h:
+        if y >= 9/10*self.vertical_space:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
-                c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
+                del self.line_quantized_coords[self.last_highlight]
+
+                c_to_replace = self.line_quantized_coords[self.pairs[self.last_highlight]]
                 self.canvas.delete(self.pairs[self.last_highlight])
+                del self.line_quantized_coords[self.pairs[self.last_highlight]]
                 self.canvas.delete(self.linedotid[self.pairs[self.last_highlight]])
                 del self.linedotid[self.pairs[self.last_highlight]]
+
+
                 self.upids.remove(self.last_highlight)
                 self.crossids.remove(self.pairs[self.last_highlight])
                 del self.pairs[self.pairs[self.last_highlight]]
@@ -226,17 +306,35 @@ class Window:
         # Delete an insert
         else:
             if self.last_highlight != -1:
-                self.canvas.delete(self.last_highlight)
-                c_to_replace = self.canvas.coords(self.pairs[self.last_highlight])
-                self.canvas.delete(self.pairs[self.last_highlight])
-                self.canvas.delete(self.linedotid[self.last_highlight])
-                del self.linedotid[self.last_highlight]
-                self.crossids.remove(self.last_highlight)
-                self.upids.remove(self.pairs[self.last_highlight])
-                del self.pairs[self.pairs[self.last_highlight]]
-                del self.pairs[self.last_highlight]
-                self.last_highlight = -1
-                self.insert(c_to_replace[0], c_to_replace[1])
+                # has pair; need to propagate
+                if self.last_highlight in self.pairs:
+                    
+                    self.canvas.delete(self.last_highlight)
+                    c_to_replace = self.line_quantized_coords[self.pairs[self.last_highlight]]
+                    self.canvas.delete(self.pairs[self.last_highlight])
+                    self.canvas.delete(self.linedotid[self.last_highlight])
+                    del self.linedotid[self.last_highlight]
+                    self.crossids.remove(self.last_highlight)
+                    self.upids.remove(self.pairs[self.last_highlight])
+                    del self.pairs[self.pairs[self.last_highlight]]
+                    del self.pairs[self.last_highlight]
+                    self.last_highlight = -1
+                    self.insert(c_to_replace[0], c_to_replace[1])
+
+                # doesn't have pair
+                else:
+                    self.canvas.delete(self.last_highlight)
+                    del self.line_quantized_coords[self.last_highlight]
+
+                    self.canvas.delete(self.linedotid[self.last_highlight])
+                    del self.dot_quantized_coords[self.linedotid[self.last_highlight]]
+                    del self.linedotid[self.last_highlight]
+                    self.crossids.remove(self.last_highlight)
+                    
+                    self.last_highlight = -1
+
+
+
 
 
 
