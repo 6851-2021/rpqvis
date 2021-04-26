@@ -295,6 +295,7 @@ class Window:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
                 del self.line_quantized_coords[self.last_highlight]
+                self.taken_x.remove(t)
 
                 c_to_replace = self.line_quantized_coords[self.pairs[self.last_highlight]]
                 self.canvas.delete(self.pairs[self.last_highlight])
@@ -302,6 +303,7 @@ class Window:
                 self.canvas.delete(self.linedotid[self.pairs[self.last_highlight]])
                 del self.linedotid[self.pairs[self.last_highlight]]
                 self.taken_x.remove(c_to_replace[0])
+                self.taken_y.remove(c_to_replace[1])
 
                 self.upids.remove(self.last_highlight)
                 self.crossids.remove(self.pairs[self.last_highlight])
@@ -315,8 +317,12 @@ class Window:
             if self.last_highlight != -1:
                 # has pair; need to propagate
                 if self.last_highlight in self.pairs:
-                    
                     self.canvas.delete(self.last_highlight)
+                    c = self.line_quantized_coords[self.last_highlight]
+                    self.taken_x.remove(c[0])
+                    self.taken_y.remove(c[1])
+                    del self.line_quantized_coords[self.last_highlight]
+                    
                     c_to_replace = self.line_quantized_coords[self.pairs[self.last_highlight]]
                     self.canvas.delete(self.pairs[self.last_highlight])
                     self.canvas.delete(self.linedotid[self.last_highlight])
@@ -327,7 +333,6 @@ class Window:
                     del self.pairs[self.last_highlight]
                     self.last_highlight = -1
                     self.taken_x.remove(c_to_replace[0])
-                    self.taken_y.remove(c_to_replace[1])
                     self.insert(c_to_replace[0], c_to_replace[1])
 
                 # doesn't have pair
