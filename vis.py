@@ -12,6 +12,8 @@ class Window:
         self.mode = "insert"
         self.step = False
 
+        self.ghost_ray = None
+
         self.linedotid = {}
 
         self.line_quantized_coords = {}
@@ -62,11 +64,11 @@ class Window:
         y = round(qy/self.vertical_space*h)
         return t, y
 
-    def display_line(self, qt1, qy1, qt2, qy2):
+    def display_line(self, qt1, qy1, qt2, qy2, fill="black"):
         t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
         t2, y2 = self.unquantize(qt2, qy2, self.w, self.h)
 
-        id = self.canvas.create_line(t1, y1, t2, y2, arrow=tk.LAST)
+        id = self.canvas.create_line(t1, y1, t2, y2, arrow=tk.LAST, fill=fill)
         return id
 
     def display_dot(self, qt, qy):
@@ -179,6 +181,66 @@ class Window:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     self.last_highlight = -1
 
+        elif self.mode == "insert":
+            t, y = self.quantize(event.x, event.y, self.w, self.h)
+            
+            linecoords = []
+
+            # turn ghost red if coordinate is taken
+            red = False
+            if t in self.taken_x or y in self.taken_y:
+                red = True
+
+            # "Insert" of a delete-min event of value y at time t
+            if y >= 9/10*self.vertical_space:
+                miny = -1
+                minid = -1
+                for line in self.crossids:
+                    c = self.line_quantized_coords[line]
+                    if c[0] <= t and c[2]>=t:
+                        if c[1] > miny:
+                            miny = c[1]
+                            minid = line
+
+                if miny < 0:
+                    linecoords = [t, round(9.5/10*self.vertical_space), t, 0]
+                    red = True
+                else:
+                    linecoords = [t, round(9.5/10*self.vertical_space), t, miny]
+
+            #insert line
+            else:
+                mint = self.w + 1
+                minid = -1
+                for line in self.upids:
+                    c = self.line_quantized_coords[line]
+                    if c[3] <= y and c[1]>=y:
+                        if c[0] < mint and c[0] > t:
+                            mint = c[0]
+                            minid = line
+
+                # doesn't cross a line
+                if minid == -1:
+                    linecoords = [t, y, self.horizontal_space, y]
+                # crosses a line
+                else:
+                    linecoords = [t, y, mint, y]
+
+            if self.ghost_ray is None:
+                if red:
+                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="red")
+                else:
+                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="black")
+            else:
+                pt1 = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)
+                pt2 = self.unquantize(linecoords[2], linecoords[3], self.w, self.h)
+        
+                self.canvas.coords(self.ghost_ray, pt1[0], pt1[1], pt2[0], pt2[1])
+                if red:
+                    self.canvas.itemconfig(self.ghost_ray, fill='red')
+                else:
+                    self.canvas.itemconfig(self.ghost_ray, fill='black')
+
 
     def clicked(self, event):
         x, y = self.quantize(event.x, event.y, self.w, self.h)
@@ -225,13 +287,16 @@ class Window:
                     if c[1] > miny:
                         miny = c[1]
                         minid = line
-
-            id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
-            self.upids.add(id)
             
             if miny < 0:
+                id = self.display_line(t, round(9.5/10*self.vertical_space), t, 0)
+                self.upids.add(id)
                 print("No min to delete")
                 return
+            
+            else:
+                id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
+                self.upids.add(id)
 
             self.line_quantized_coords[id] = [t, round(9.5/10*self.vertical_space), t, miny]
             c = self.line_quantized_coords[minid]
