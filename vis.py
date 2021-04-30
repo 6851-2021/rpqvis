@@ -121,6 +121,28 @@ class Window:
             dot = self.linedotid[k]
             self.scale_dot(dot)
 
+    def check_propagate_error(self, id):
+        # insert a delete-min
+        [t, y, _, _] = self.line_quantized_coords[id]
+        print(t, y)
+        if y >= 9/10*self.vertical_space:
+            miny = -1
+            minid = -1
+            for line in self.crossids:
+                c = self.line_quantized_coords[line]
+                if c[0] <= t and c[2]>t:
+                    if c[1] > miny:
+                        miny = c[1]
+                        minid = line
+
+            if miny < 0:
+                return True
+            else:
+                if minid in self.pairs:
+                    return self.check_propagate_error(self.pairs[minid])
+                else:
+                    return False
+
 
     def motion(self, event):
         
@@ -191,7 +213,7 @@ class Window:
             if t in self.taken_x or y in self.taken_y:
                 red = True
 
-            # "Insert" of a delete-min event of value y at time t
+            # insert a delete-min
             if y >= 9/10*self.vertical_space:
                 miny = -1
                 minid = -1
@@ -207,6 +229,8 @@ class Window:
                     red = True
                 else:
                     linecoords = [t, round(9.5/10*self.vertical_space), t, miny]
+                    if minid in self.pairs:
+                        red = self.check_propagate_error(self.pairs[minid])
 
             #insert line
             else:
@@ -230,7 +254,7 @@ class Window:
                 if red:
                     self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="red")
                 else:
-                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="black")
+                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="light grey")
             else:
                 pt1 = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)
                 pt2 = self.unquantize(linecoords[2], linecoords[3], self.w, self.h)
@@ -239,7 +263,7 @@ class Window:
                 if red:
                     self.canvas.itemconfig(self.ghost_ray, fill='red')
                 else:
-                    self.canvas.itemconfig(self.ghost_ray, fill='black')
+                    self.canvas.itemconfig(self.ghost_ray, fill='light grey')
 
 
     def clicked(self, event):
