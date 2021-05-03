@@ -88,15 +88,14 @@ class Window:
         pt1 = self.unquantize(c[0], c[1], self.w, self.h)
         self.canvas.coords(id, pt1[0]+3, pt1[1]+3, pt1[0]-3, pt1[1]-3)
 
-
     def query(self, t):
         existlist = []
         for line in self.crossids:
             c = self.line_quantized_coords[line]
             if c[2] > t and c[0] <= t:
-                existlist.append(self.vertical_space - c[1])
+                existlist.append(c[1])
 
-        return sorted(existlist)
+        return sorted(existlist, reverse=True)
 
     def resize(self, event):
         
@@ -147,14 +146,18 @@ class Window:
         
         if self.query_id is not None:
             self.canvas.delete(self.query_id)
+            self.query_id = None
 
         if self.mode == "query":
-            curr_queue = self.query(event.x)
+            t, y = self.quantize(event.x, event.y, self.w, self.h)
+            curr_queue = self.query(t)
             curr_min = 0
             # TODO: magic numbers here, remove when resize done
             if len(curr_queue) > 0:
-                curr_min = 270 - curr_queue[0]
-            self.query_id = self.canvas.create_line(event.x, 9/10*self.h, event.x, curr_min, arrow=tk.LAST)
+                curr_min = curr_queue[0]
+            self.query_id = self.display_line(t, 9/10*self.vertical_space, t, curr_min)
+            
+            # self.canvas.create_line(event.x, 9/10*self.h, event.x, curr_min, arrow=tk.LAST)
             self.canvas.itemconfig(self.query_id, fill='green')
 
         # color changes on hover, for "Delete" events only
@@ -277,7 +280,7 @@ class Window:
             return
 
         if self.mode == "query":
-            print(self.query(x))
+            print([round(9/10*self.vertical_space-l) for l in self.query(x)])
         elif self.mode == "insert":
             self.insert(x, y)
         elif self.mode == "delete":
@@ -300,6 +303,7 @@ class Window:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
             if self.ghost_ray is not None:
                 self.canvas.delete(self.ghost_ray)
+                self.ghost_ray = None
             self.last_highlight = -1
 
     def insert(self, t, y):
@@ -324,9 +328,8 @@ class Window:
                 if self.check_propagate_error(self.pairs[minid]):
                     return
             
-            else:
-                id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
-                self.upids.add(id)
+            id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
+            self.upids.add(id)
 
             self.line_quantized_coords[id] = [t, round(9.5/10*self.vertical_space), t, miny]
             c = self.line_quantized_coords[minid]
@@ -411,7 +414,6 @@ class Window:
                 else:
                     self.pairs[id] = minid
                     self.pairs[minid] = id
-
 
 
     def delete(self, t, y):
