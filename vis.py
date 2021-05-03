@@ -163,51 +163,46 @@ class Window:
         # color changes on hover, for "Delete" events only
         elif self.mode == "delete":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
-            # delete a delete-min
-            if y >= 9/10*self.vertical_space:
-                closest = -1
-                dist = float('inf')
-                for line in self.upids:
-                    c = self.line_quantized_coords[line]
-                    if c[0] <= t+1 and c[0]>=t-1:
-                        if abs(t-c[0]) < dist:
-                            closest = line
-                            dist = abs(t-c[0])
-                if closest >= 0:
-                    if self.last_highlight != -1 and self.last_highlight != closest:
-                        self.canvas.itemconfig(self.last_highlight, fill='black')
-                    elif self.last_highlight == -1:
-                        self.canvas.itemconfig(closest, fill='light grey')
- 
-                    self.last_highlight = closest
+    
+            closest = -1
+            dist = float('inf')
+            linetype = None
+            for line in self.crossids:
+                c = self.line_quantized_coords[line]
+                if c[1] <= y+1 and c[1]>=y-1 and c[0] <= t and c[2] >= t:
+                    if abs(y-c[1]) < dist:
+                        closest = line
+                        dist = abs(y-c[1])
+                        linetype = "cross"
+            
+            for line in self.upids:
+                c = self.line_quantized_coords[line]
+                if c[0] <= t+1 and c[0]>=t-1 and c[3] <= y and c[1] >= y:
+                    if abs(t-c[0]) < dist:
+                        closest = line
+                        dist = abs(t-c[0])
+                        linetype = "up"
+
+
+            if closest >= 0:
+                if self.last_highlight != -1 and self.last_highlight != closest:
+                    self.canvas.itemconfig(self.last_highlight, fill='black')
                 else:
-                    if self.last_highlight != -1:
-                        self.canvas.itemconfig(self.last_highlight, fill='black')
-                    self.last_highlight = -1
-            # delete an insert
-            else:
-                closest = -1
-                dist = float('inf')
-                for line in self.crossids:
-                    c = self.line_quantized_coords[line]
-                    if c[1] <= y+1 and c[1]>=y-1 and c[0] <= t and c[2] >= t:
-                        if abs(y-c[1]) < dist:
-                            closest = line
-                            dist = abs(y-c[1])
-                if closest >= 0:
-                    if self.last_highlight != -1 and self.last_highlight != closest:
-                        self.canvas.itemconfig(self.last_highlight, fill='black')
-                    elif self.last_highlight == -1:
+                    if linetype == "up":
+                        self.canvas.itemconfig(closest, fill='light grey')
+                    elif linetype == "cross":
                         if closest in self.pairs and self.check_propagate_error(self.pairs[closest]):
                             self.canvas.itemconfig(closest, fill='red')
                         else:
                             self.canvas.itemconfig(closest, fill='light grey')
+
                     
-                    self.last_highlight = closest
-                else:
-                    if self.last_highlight != -1:
-                        self.canvas.itemconfig(self.last_highlight, fill='black')
-                    self.last_highlight = -1
+                self.last_highlight = closest
+
+            else:
+                if self.last_highlight != -1:
+                    self.canvas.itemconfig(self.last_highlight, fill='black')
+                self.last_highlight = -1
 
         elif self.mode == "insert":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
@@ -231,10 +226,10 @@ class Window:
                             minid = line
 
                 if miny < 0:
-                    linecoords = [t, round(9.5/10*self.vertical_space), t, 0]
+                    linecoords = [t, round(9/10*self.vertical_space), t, 0]
                     red = True
                 else:
-                    linecoords = [t, round(9.5/10*self.vertical_space), t, miny]
+                    linecoords = [t, round(9/10*self.vertical_space), t, miny]
                     if minid in self.pairs:
                         red = self.check_propagate_error(self.pairs[minid])
 
@@ -328,10 +323,10 @@ class Window:
                 if self.check_propagate_error(self.pairs[minid]):
                     return
             
-            id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
+            id = self.display_line(t, round(9/10*self.vertical_space), t, miny)
             self.upids.add(id)
 
-            self.line_quantized_coords[id] = [t, round(9.5/10*self.vertical_space), t, miny]
+            self.line_quantized_coords[id] = [t, round(9/10*self.vertical_space), t, miny]
             c = self.line_quantized_coords[minid]
             self.taken_x.add(t)
             self.line_quantized_coords[minid][2] = t
@@ -418,7 +413,7 @@ class Window:
 
     def delete(self, t, y):
         # Delete a deletemin
-        if y >= 9/10*self.vertical_space:
+        if self.last_highlight in self.upids:
             if self.last_highlight != -1:
                 self.canvas.delete(self.last_highlight)
                 c = self.line_quantized_coords[self.last_highlight]
