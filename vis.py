@@ -124,7 +124,6 @@ class Window:
     def check_propagate_error(self, id):
         # insert a delete-min
         [t, y, _, _] = self.line_quantized_coords[id]
-        print(t, y)
         if y >= 9/10*self.vertical_space:
             miny = -1
             minid = -1
@@ -161,6 +160,7 @@ class Window:
         # color changes on hover, for "Delete" events only
         elif self.mode == "delete":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
+            # delete a delete-min
             if y >= 9/10*self.vertical_space:
                 closest = -1
                 dist = float('inf')
@@ -174,14 +174,14 @@ class Window:
                     if self.last_highlight != -1 and self.last_highlight != closest:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     elif self.last_highlight == -1:
-                        self.canvas.itemconfig(closest, fill='red')
+                        self.canvas.itemconfig(closest, fill='light grey')
  
                     self.last_highlight = closest
                 else:
                     if self.last_highlight != -1:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     self.last_highlight = -1
- 
+            # delete an insert
             else:
                 closest = -1
                 dist = float('inf')
@@ -195,7 +195,10 @@ class Window:
                     if self.last_highlight != -1 and self.last_highlight != closest:
                         self.canvas.itemconfig(self.last_highlight, fill='black')
                     elif self.last_highlight == -1:
-                        self.canvas.itemconfig(closest, fill='red')
+                        if closest in self.pairs and self.check_propagate_error(self.pairs[closest]):
+                            self.canvas.itemconfig(closest, fill='red')
+                        else:
+                            self.canvas.itemconfig(closest, fill='light grey')
                     
                     self.last_highlight = closest
                 else:
@@ -295,6 +298,8 @@ class Window:
                 print("step-through: ", self.step)
             if self.last_highlight != -1:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
+            if self.ghost_ray is not None:
+                self.canvas.delete(self.ghost_ray)
             self.last_highlight = -1
 
     def insert(self, t, y):
@@ -313,10 +318,11 @@ class Window:
                         minid = line
             
             if miny < 0:
-                id = self.display_line(t, round(9.5/10*self.vertical_space), t, 0)
-                self.upids.add(id)
                 print("No min to delete")
                 return
+            elif minid in self.pairs:
+                if self.check_propagate_error(self.pairs[minid]):
+                    return
             
             else:
                 id = self.display_line(t, round(9.5/10*self.vertical_space), t, miny)
@@ -441,6 +447,9 @@ class Window:
             if self.last_highlight != -1:
                 # has pair; need to propagate
                 if self.last_highlight in self.pairs:
+                    if self.check_propagate_error(self.pairs[self.last_highlight]):
+                        return
+
                     self.canvas.delete(self.last_highlight)
                     c = self.line_quantized_coords[self.last_highlight]
                     self.taken_x.remove(c[0])
