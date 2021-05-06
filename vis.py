@@ -13,6 +13,7 @@ class Window:
         self.step = False
 
         self.ghost_ray = None
+        self.ghost_dot = None
 
         self.linedotid = {}
 
@@ -71,9 +72,9 @@ class Window:
         id = self.canvas.create_line(t1, y1, t2, y2, arrow=tk.LAST, fill=fill)
         return id
 
-    def display_dot(self, qt, qy):
+    def display_dot(self, qt, qy, fill="black", outline="black"):
         t, y = self.unquantize(qt, qy, self.w, self.h)
-        id = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill="black")
+        id = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill=fill, outline=outline)
         return id
 
     def scale_line(self, id):
@@ -183,7 +184,6 @@ class Window:
                         dist = abs(t-c[0])
                         linetype = "up"
 
-
             if closest >= 0:
                 if self.last_highlight != -1 and self.last_highlight != closest:
                     self.canvas.itemconfig(self.last_highlight, fill='black')
@@ -193,15 +193,18 @@ class Window:
                     elif linetype == "cross":
                         if closest in self.pairs and self.check_propagate_error(self.pairs[closest]):
                             self.canvas.itemconfig(closest, fill='red')
+                            self.canvas.itemconfig(self.linedotid[closest], fill='red', outline='red')
                         else:
                             self.canvas.itemconfig(closest, fill='light grey')
-
-                    
+                            self.canvas.itemconfig(self.linedotid[closest], fill='light grey', outline='light grey')
+                            
                 self.last_highlight = closest
 
             else:
                 if self.last_highlight != -1:
                     self.canvas.itemconfig(self.last_highlight, fill='black')
+                    if self.last_highlight in self.crossids:
+                        self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='black', outline='black')
                 self.last_highlight = -1
 
         elif self.mode == "insert":
@@ -261,10 +264,28 @@ class Window:
                 pt2 = self.unquantize(linecoords[2], linecoords[3], self.w, self.h)
         
                 self.canvas.coords(self.ghost_ray, pt1[0], pt1[1], pt2[0], pt2[1])
+
                 if red:
                     self.canvas.itemconfig(self.ghost_ray, fill='red')
                 else:
                     self.canvas.itemconfig(self.ghost_ray, fill='light grey')
+
+            if y >= 9/10*self.vertical_space:
+                if self.ghost_dot is not None:
+                    self.canvas.delete(self.ghost_dot)
+                    self.ghost_dot = None
+            elif self.ghost_dot is None:
+                if red:
+                    self.ghost_dot = self.display_dot(linecoords[0], linecoords[1], fill="red", outline="red")
+                else:
+                    self.ghost_dot = self.display_dot(linecoords[0], linecoords[1], fill="light grey", outline="light grey")
+            else:
+                pt = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)        
+                self.canvas.coords(self.ghost_dot, pt[0]+3, pt[1]+3, pt[0]-3, pt[1]-3)
+                if red:
+                    self.canvas.itemconfig(self.ghost_dot, fill='red', outline='red')
+                else:
+                    self.canvas.itemconfig(self.ghost_dot, fill='light grey', outline='light grey')
 
 
     def clicked(self, event):
