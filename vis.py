@@ -187,9 +187,13 @@ class Window:
             if closest >= 0:
                 if self.last_highlight != -1 and self.last_highlight != closest:
                     self.canvas.itemconfig(self.last_highlight, fill='black')
+                    if self.last_highlight in self.crossids:
+                        self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='black', outline='black')
                 else:
                     if linetype == "up":
                         self.canvas.itemconfig(closest, fill='light grey')
+                        if self.last_highlight in self.crossids:
+                            self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='light grey', outline='light grey')
                     elif linetype == "cross":
                         if closest in self.pairs and self.check_propagate_error(self.pairs[closest]):
                             self.canvas.itemconfig(closest, fill='red')
@@ -317,9 +321,14 @@ class Window:
                 print("step-through: ", self.step)
             if self.last_highlight != -1:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
+                if self.last_highlight in self.crossids:
+                    self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='black', outline='black')
             if self.ghost_ray is not None:
                 self.canvas.delete(self.ghost_ray)
                 self.ghost_ray = None
+            if self.ghost_dot is not None:
+                self.canvas.delete(self.ghost_dot)
+                self.ghost_dot = None
             self.last_highlight = -1
 
     def insert(self, t, y):
