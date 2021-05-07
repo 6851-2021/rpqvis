@@ -39,6 +39,8 @@ class Window:
         self.canvas.pack()
 
         self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
+        self.table_sep = self.canvas.create_line(500, 0, 500, 300, fill="black")
+        self.table_text = self.canvas.create_text(520, 20, font="Times 12", anchor="nw", text="")
         self.canvas.addtag_all("all")
         self.pairs = dict()
 
@@ -63,6 +65,10 @@ class Window:
         t = round(qt/self.horizontal_space*w)
         y = round(qy/self.vertical_space*h)
         return t, y
+
+    def display_table(self):
+        self.canvas.itemconfig(self.table_text, text=
+            '\n'.join([str(round(9/10*self.vertical_space-l)) for l in self.query(self.horizontal_space-1)]))
 
     def display_line(self, qt1, qy1, qt2, qy2, fill="black"):
         t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
@@ -280,6 +286,8 @@ class Window:
             self.insert(x, y)
         elif self.mode == "delete":
             self.delete(x, y)
+
+        self.display_table()
 
     def toggle(self, event):
         if time.time() - self.last_toggle > .1:
