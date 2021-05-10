@@ -1,6 +1,7 @@
 import tkinter as tk
 import time
 
+TABLE_SCALE = 5.0 / 6
 
 class Window:
     def __init__(self):
@@ -52,7 +53,7 @@ class Window:
         self.window.mainloop()
 
     def quantize(self, t, y, w, h):
-        qt = round(t/w*self.horizontal_space)
+        qt = round(t/(w*TABLE_SCALE)*self.horizontal_space)
         qy = round(y/h*self.vertical_space)
         return qt, qy
 
@@ -62,7 +63,7 @@ class Window:
         return (pt1[0], pt1[1], pt2[0], pt2[1])
 
     def unquantize(self, qt, qy, w, h):
-        t = round(qt/self.horizontal_space*w)
+        t = round(qt/self.horizontal_space*(w*TABLE_SCALE))
         y = round(qy/self.vertical_space*h)
         return t, y
 
@@ -149,6 +150,11 @@ class Window:
 
 
     def motion(self, event):
+
+        if event.x >= self.w * TABLE_SCALE - 5:
+            if self.ghost_ray is not None:
+                self.canvas.itemconfig(self.ghost_ray, fill='')
+            return
         
         if self.query_id is not None:
             self.canvas.delete(self.query_id)
@@ -189,7 +195,6 @@ class Window:
                         dist = abs(t-c[0])
                         linetype = "up"
 
-
             if closest >= 0:
                 if self.last_highlight != -1 and self.last_highlight != closest:
                     self.canvas.itemconfig(self.last_highlight, fill='black')
@@ -202,7 +207,6 @@ class Window:
                         else:
                             self.canvas.itemconfig(closest, fill='light grey')
 
-                    
                 self.last_highlight = closest
 
             else:
@@ -274,10 +278,13 @@ class Window:
 
 
     def clicked(self, event):
+        if event.x >= self.w * TABLE_SCALE - 5:
+            return
+
         x, y = self.quantize(event.x, event.y, self.w, self.h)
 
         # avoid drawing lines too close to edge
-        if (x < 4 or x > self.horizontal_space-4) and (y < 4 or y > self.vertical_space - 4) and (event.x < 24 or event.x > self.w - 24) and (event.y < 24 or event.y > self.h - 24):
+        if (x < 4 or x > self.horizontal_space-4) and (y < 4 or y > self.vertical_space - 4) and (event.x < 24 or event.x > self.w * TABLE_SCALE - 24) and (event.y < 24 or event.y > self.h - 24):
             return
 
         if self.mode == "query":
