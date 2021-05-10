@@ -3,7 +3,8 @@ import time
 
 
 class Window:
-    def __init__(self):
+    def __init__(self, x, y):
+
         self.vertical_space = 50
         self.horizontal_space = 100
 
@@ -11,6 +12,8 @@ class Window:
         self.upids = set()
         self.mode = "insert"
         self.step = False
+
+        self.instructions = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through is enabled, propagation of operations is slowed down so you can see changes happening."
 
         self.ghost_ray = None
         self.ghost_dot = None
@@ -28,8 +31,9 @@ class Window:
         self.query_id = None
         self.window = tk.Tk()
 
-        self.window.geometry("600x300")
+        self.window.geometry("600x300+%d+%d" % (x, y))
         self.window.minsize(300, 150)
+        self.window.wm_title("rpqvis")
         self.canvas = tk.Canvas(self.window, width=600, height=300)
         self.canvas.bind("<Button-1>", self.clicked)
         self.window.bind("<d>", self.toggle)
@@ -39,7 +43,7 @@ class Window:
         self.window.bind("<Configure>", self.resize)
         self.canvas.pack()
 
-        self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
+        self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 300, fill="black")
         self.canvas.addtag_all("all")
         self.pairs = dict()
 
@@ -49,6 +53,33 @@ class Window:
         self.h = 300
 
         self.window.mainloop()
+
+    def popup(self):
+        inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through is enabled, propagation of operations is slowed down so you can see changes happening.".split()
+
+        popup = tk.Tk()
+        popup.geometry("400x230")
+        popup.wm_title("Help")
+        popup.minsize(400, 230)
+        popup.maxsize(400, 230)
+
+        new_inst = ""
+        linelen = 0
+
+        # wrap by word
+        for word in inst:
+            if linelen+len(word)+1> 400/7:
+                new_inst+="\n"
+                linelen = 0
+            linelen+= len(word)+1
+            new_inst += " " + word
+
+
+        label = tk.Label(popup, text=new_inst)
+        label.pack(side="top", fill="x", pady=10)
+        button = tk.Button(popup, text="Okay", command = popup.destroy)
+        button.pack()
+        popup.mainloop()
 
     def quantize(self, t, y, w, h):
         qt = round(t/w*self.horizontal_space)
@@ -511,10 +542,32 @@ class Window:
                     del self.linedotid[self.last_highlight]
                     self.crossids.remove(self.last_highlight)
                     
-                    
                     self.last_highlight = -1
 
 
 
+splash = tk.Tk()
 
-Window()
+splash.title("rpqvis")
+ws = splash.winfo_screenwidth()
+hs = splash.winfo_screenheight()
+x = (ws/2) - 300
+y = (hs/2) - 150
+splash.geometry("600x300+%d+%d" % (x, y))
+
+
+splash_label= tk.Label(splash, text= "rpqvis", fg= "black", font = ('Times New Roman', 40)).pack(pady=60)
+click_label = tk.Label(splash, text= "click to begin", fg= "black", font = ('Times New Roman', 20)).pack(pady=20)
+
+def mainWin(_=None):
+    x = splash.winfo_x()
+    y = splash.winfo_y()
+    splash.destroy()
+    Window(x, y)
+
+splash.bind("<Button-1>", mainWin)
+# splash.after(3000, mainWin)
+splash.minsize(600, 300)
+splash.maxsize(600, 300)
+
+splash.mainloop()
