@@ -41,7 +41,9 @@ class Window:
 
         self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 350, fill="black")
         self.table_sep = self.canvas.create_line(500, 0, 500, 300, fill="black")
-        self.table_text = self.canvas.create_text(520, 20, font="Times 12", anchor="nw", text="")
+        self.table_label = self.canvas.create_text(515, 20, font="Times 14", anchor="nw",
+            text="Elements \nat t=∞:")
+        self.table_text = self.canvas.create_text(520, 90, font="Times 12", anchor="nw", text="")
         self.canvas.addtag_all("all")
         self.pairs = dict()
 
@@ -69,7 +71,7 @@ class Window:
 
     def display_table(self):
         self.canvas.itemconfig(self.table_text, text=
-            '\n'.join([str(round(9/10*self.vertical_space-l)) for l in self.query(self.horizontal_space-1)]))
+            '\n'.join([str(round(9/10*self.vertical_space-l)) for l in reversed(self.query(self.horizontal_space-1))]))
 
     def display_line(self, qt1, qy1, qt2, qy2, fill="black"):
         t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
@@ -113,6 +115,9 @@ class Window:
         self.canvas.config(width=event.width, height=event.height)
         # rescale all the objects tagged with the "all" tag
         self.canvas.scale("all", 0, 0, rw, rh)
+
+        self.canvas.scale(self.table_label, 0, 0, 1.0, 1/rh)
+        self.canvas.scale(self.table_text, 0, 0, 1.0, 1/rh)
 
         self.w = event.width
         self.h = event.height
