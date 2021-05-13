@@ -89,7 +89,7 @@ class Window:
         c = self.line_quantized_coords[id]
         pt1 = self.unquantize(c[0], c[1], self.w, self.h)
         pt2 = self.unquantize(c[2], c[3], self.w, self.h)
-        
+
         self.canvas.coords(id, pt1[0], pt1[1], pt2[0], pt2[1])
 
     def scale_dot(self, id):
@@ -107,10 +107,10 @@ class Window:
         return sorted(existlist, reverse=False)
 
     def resize(self, event):
-        
+
         rw = float(event.width)/self.w
         rh = float(event.height)/self.h
-        
+
         # resize the canvas 
         self.canvas.config(width=event.width, height=event.height)
         # rescale all the objects tagged with the "all" tag
@@ -160,7 +160,7 @@ class Window:
             if self.ghost_ray is not None:
                 self.canvas.itemconfig(self.ghost_ray, fill='')
             return
-        
+
         if self.query_id is not None:
             self.canvas.delete(self.query_id)
             self.query_id = None
@@ -174,8 +174,7 @@ class Window:
             if len(curr_queue) > 0:
                 curr_min = curr_queue[-1]
             self.query_id = self.display_line(t, 9/10*self.vertical_space, t, curr_min)
-            
-            # self.canvas.create_line(event.x, 9/10*self.h, event.x, curr_min, arrow=tk.LAST)
+
             self.canvas.itemconfig(self.query_id, fill='green')
 
         # color changes on hover, for "Delete" events only
@@ -192,7 +191,7 @@ class Window:
                         closest = line
                         dist = abs(y-c[1])
                         linetype = "cross"
-            
+
             for line in self.upids:
                 c = self.line_quantized_coords[line]
                 if c[0] <= t+1 and c[0]>=t-1 and c[3] <= y and c[1] >= y:
@@ -222,7 +221,7 @@ class Window:
 
         elif self.mode == "insert":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
-            
+
             linecoords = []
 
             # turn ghost red if coordinate is taken
@@ -275,7 +274,7 @@ class Window:
             else:
                 pt1 = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)
                 pt2 = self.unquantize(linecoords[2], linecoords[3], self.w, self.h)
-        
+
                 self.canvas.coords(self.ghost_ray, pt1[0], pt1[1], pt2[0], pt2[1])
                 if red:
                     self.canvas.itemconfig(self.ghost_ray, fill='red')
@@ -321,6 +320,7 @@ class Window:
                 self.canvas.delete(self.ghost_ray)
                 self.ghost_ray = None
             self.last_highlight = -1
+            self.display_table()
 
     def insert(self, t, y):
         # don't allow same coords
@@ -336,14 +336,14 @@ class Window:
                     if c[1] > miny:
                         miny = c[1]
                         minid = line
-            
+
             if miny < 0:
                 print("No min to delete")
                 return
             elif minid in self.pairs:
                 if self.check_propagate_error(self.pairs[minid]):
                     return
-            
+
             id = self.display_line(t, round(9/10*self.vertical_space), t, miny)
             self.upids.add(id)
 
@@ -361,7 +361,7 @@ class Window:
 
                 self.upids.remove(self.pairs[minid])
                 del self.pairs[self.pairs[minid]]
-                
+
                 self.pairs[id] = minid
                 self.pairs[minid] = id
                 if self.step:
@@ -418,7 +418,7 @@ class Window:
                     del self.linedotid[self.pairs[minid]]
                     self.taken_x.remove(c_to_replace[0])
                     self.taken_y.remove(c_to_replace[1])
-                    
+
                     self.crossids.remove(self.pairs[minid])
                     del self.pairs[self.pairs[minid]]
                     self.pairs[id] = minid
@@ -431,6 +431,7 @@ class Window:
                     self.pairs[id] = minid
                     self.pairs[minid] = id
 
+        self.display_table()
 
     def delete(self, t, y):
         # Delete a deletemin
@@ -501,11 +502,10 @@ class Window:
                     del self.dot_quantized_coords[self.linedotid[self.last_highlight]]
                     del self.linedotid[self.last_highlight]
                     self.crossids.remove(self.last_highlight)
-                    
-                    
+
                     self.last_highlight = -1
 
-
+        self.display_table()
 
 
 Window()
