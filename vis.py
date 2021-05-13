@@ -69,9 +69,9 @@ class Window:
         y = round(qy/self.vertical_space*h)
         return t, y
 
-    def display_table(self):
+    def display_table(self, t=99):
         self.canvas.itemconfig(self.table_text, text=
-            '\n'.join([str(round(9/10*self.vertical_space-l)) for l in reversed(self.query(self.horizontal_space-1))]))
+            '\n'.join([str(round(9/10*self.vertical_space-l)) for l in self.query(t)]))
 
     def display_line(self, qt1, qy1, qt2, qy2, fill="black"):
         t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
@@ -104,7 +104,7 @@ class Window:
             if c[2] > t and c[0] <= t:
                 existlist.append(c[1])
 
-        return sorted(existlist, reverse=True)
+        return sorted(existlist, reverse=False)
 
     def resize(self, event):
         
@@ -167,11 +167,12 @@ class Window:
 
         if self.mode == "query":
             t, y = self.quantize(event.x, event.y, self.w, self.h)
+            self.display_table(t)
             curr_queue = self.query(t)
             curr_min = 0
             # TODO: magic numbers here, remove when resize done
             if len(curr_queue) > 0:
-                curr_min = curr_queue[0]
+                curr_min = curr_queue[-1]
             self.query_id = self.display_line(t, 9/10*self.vertical_space, t, curr_min)
             
             # self.canvas.create_line(event.x, 9/10*self.h, event.x, curr_min, arrow=tk.LAST)
@@ -296,10 +297,10 @@ class Window:
             print([round(9/10*self.vertical_space-l) for l in self.query(x)])
         elif self.mode == "insert":
             self.insert(x, y)
+            self.display_table()
         elif self.mode == "delete":
             self.delete(x, y)
-
-        self.display_table()
+            self.display_table()
 
     def toggle(self, event):
         if time.time() - self.last_toggle > .1:
