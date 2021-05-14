@@ -1,10 +1,11 @@
 import tkinter as tk
 import time
 
-TABLE_SCALE = 5.0 / 6
+TABLE_SCALE = 5.0/6
 
 class Window:
     def __init__(self, x, y):
+
 
         self.vertical_space = 50
         self.horizontal_space = 100
@@ -13,8 +14,6 @@ class Window:
         self.upids = set()
         self.mode = "insert"
         self.step = False
-
-        self.instructions = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through is enabled, propagation of operations is slowed down so you can see changes happening."
 
         self.ghost_ray = None
         self.ghost_dot = None
@@ -33,7 +32,7 @@ class Window:
         self.window = tk.Tk()
 
         self.window.geometry("600x300+%d+%d" % (x, y))
-        self.window.minsize(300, 150)
+        self.window.minsize(600, 300)
         self.window.wm_title("rpqvis")
         self.canvas = tk.Canvas(self.window, width=600, height=300)
         self.canvas.bind("<Button-1>", self.clicked)
@@ -41,29 +40,53 @@ class Window:
         self.window.bind("<i>", self.toggle)
         self.window.bind("<q>", self.toggle)
         self.window.bind("<s>", self.toggle)
-        self.window.bind("<Configure>", self.resize)
+        self.canvas.bind("<Configure>", self.resize)
         self.canvas.pack()
 
-        self.bottom_rect = self.canvas.create_rectangle(0, 270, 600, 300, fill="black")
+        self.help_btn = tk.Button(self.canvas, text="Help", command=self.popup)
+        self.mode_label = self.canvas.create_text(515, 15, font="Times 14", anchor="nw", text="Mode:")
+        self.delete_btn = tk.Radiobutton(self.canvas, text="Delete", command=self.toggle_delete, variable=self.mode, value="delete")
+        self.insert_btn = tk.Radiobutton(self.canvas, text="Insert", command=self.toggle_insert, variable=self.mode, value="insert")
+        self.query_btn = tk.Radiobutton(self.canvas, text="Query", command=self.toggle_query, variable=self.mode, value="query")
+        
+        self.delete_btn.deselect()
+        self.query_btn.deselect()
+        self.insert_btn.select()
+
+        self.bottom_rect = self.canvas.create_rectangle(0, 270, 500, 300, fill="black")
         self.table_sep = self.canvas.create_line(500, 0, 500, 300, fill="black")
-        self.table_label = self.canvas.create_text(515, 20, font="Times 14", anchor="nw",
+        self.table_label = self.canvas.create_text(515, 145, font="Times 14", anchor="nw",
             text="Elements \nat t=∞:")
-        self.table_text = self.canvas.create_text(520, 90, font="Times 12", anchor="nw", text="")
-        self.canvas.addtag_all("all")
+        self.table_text = self.canvas.create_text(520, 182, font="Times 12", anchor="nw", text="")
+        
         self.pairs = dict()
 
         self.canvas.bind('<Motion>', self.motion)
         self.last_highlight = -1
         self.w = 600
         self.h = 300
+        self.step_btn = tk.Button(self.canvas, text="Step", command=self.toggle_step)
+
+        self.help_btn.place(x=520, y=270, width=60)
+        self.insert_btn.place(x=520, y=35, width=60)
+        self.delete_btn.place(x=520, y=60, width=60)
+        self.query_btn.place(x=520, y=85, width=60)
+        self.step_btn.place(x=520, y=110, width=60)
+        self.canvas.addtag_all("all")
 
         self.window.mainloop()
 
     def popup(self):
-        inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through is enabled, propagation of operations is slowed down so you can see changes happening.".split()
+        inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through (Step) is enabled, propagation of operations is slowed down so you can see changes happening.".split()
+
+
+        x = self.window.winfo_x()+self.window.winfo_width()/2-200
+        y = self.window.winfo_y()+self.window.winfo_height()/2-115
+        
+
 
         popup = tk.Tk()
-        popup.geometry("400x230")
+        popup.geometry("400x230+%d+%d"% (x, y))
         popup.wm_title("Help")
         popup.minsize(400, 230)
         popup.maxsize(400, 230)
@@ -138,8 +161,7 @@ class Window:
 
         return sorted(existlist, reverse=True)
 
-    def resize(self, event):
-        
+    def resize(self, event):        
         rw = float(event.width)/self.w
         rh = float(event.height)/self.h
         
@@ -163,6 +185,16 @@ class Window:
         for k in self.linedotid:
             dot = self.linedotid[k]
             self.scale_dot(dot)
+
+        button_x = event.width*TABLE_SCALE + (event.width - event.width*TABLE_SCALE)*.5 - 30
+        self.help_btn.place(x=button_x, y=self.h-30)
+        self.insert_btn.place(x=button_x, y=35)
+        self.delete_btn.place(x=button_x, y=60)
+        self.query_btn.place(x=button_x, y=85)
+        self.step_btn.place(x=button_x, y=110)
+        self.canvas.coords(self.mode_label, event.width*TABLE_SCALE+15, 15)
+    
+
 
     def check_propagate_error(self, id):
         # insert a delete-min
@@ -189,8 +221,17 @@ class Window:
     def motion(self, event):
 
         if event.x >= self.w * TABLE_SCALE - 5:
+            if self.last_highlight != -1:
+                self.canvas.itemconfig(self.last_highlight, fill='black')
+                if self.last_highlight in self.crossids:
+                    self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='black', outline='black')
             if self.ghost_ray is not None:
-                self.canvas.itemconfig(self.ghost_ray, fill='')
+                self.canvas.delete(self.ghost_ray)
+                self.ghost_ray = None
+            if self.ghost_dot is not None:
+                self.canvas.delete(self.ghost_dot)
+                self.ghost_dot = None
+            self.last_highlight = -1
             return
         
         if self.query_id is not None:
@@ -359,18 +400,45 @@ class Window:
 
         self.display_table()
 
-    def toggle(self, event):
+    def toggle_delete(self):
+        self.toggle(None, "d")
+
+    def toggle_insert(self):
+        self.toggle(None, "i")
+
+    def toggle_step(self):
+        self.toggle(None, "s")
+
+    def toggle_query(self):
+        self.toggle(None, "q")
+
+    def toggle(self, event, key=None):
+        if key is None:
+            key = event.keysym
         if time.time() - self.last_toggle > .1:
-            print(event.keysym)
+            print(key)
             self.last_toggle = time.time()
-            if event.keysym == "d":
+            if key == "d":
                 self.mode = "delete"
-            elif event.keysym == "i":
+                self.delete_btn.select()
+                self.insert_btn.deselect()
+                self.query_btn.deselect()
+            elif key == "i":
                 self.mode = "insert"
-            elif event.keysym == "q":
+                self.delete_btn.deselect()
+                self.insert_btn.select()
+                self.query_btn.deselect()
+            elif key == "q":
                 self.mode = "query"
-            elif event.keysym == "s":
+                self.delete_btn.deselect()
+                self.insert_btn.deselect()
+                self.query_btn.select()
+            elif key == "s":
                 self.step = not self.step
+                if self.step:
+                    self.step_btn.configure(fg="green")
+                else:
+                    self.step_btn.configure(fg="black")
                 print("step-through: ", self.step)
             if self.last_highlight != -1:
                 self.canvas.itemconfig(self.last_highlight, fill='black')
