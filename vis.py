@@ -2,6 +2,7 @@ import tkinter as tk
 import time
 
 TABLE_SCALE = 5.0 / 6
+VERTICAL_SCALE = 9.0 / 10
 
 class Window:
     def __init__(self):
@@ -170,10 +171,9 @@ class Window:
             self.display_table(t)
             curr_queue = self.query(t)
             curr_min = 0
-            # TODO: magic numbers here, remove when resize done
             if len(curr_queue) > 0:
                 curr_min = curr_queue[-1]
-            self.query_id = self.display_line(t, 9/10*self.vertical_space, t, curr_min)
+            self.query_id = self.display_line(t, VERTICAL_SCALE*self.vertical_space, t, curr_min)
 
             self.canvas.itemconfig(self.query_id, fill='green')
 
@@ -230,7 +230,7 @@ class Window:
                 red = True
 
             # insert a delete-min
-            if y >= 9/10*self.vertical_space:
+            if y >= VERTICAL_SCALE*self.vertical_space:
                 miny = -1
                 minid = -1
                 for line in self.crossids:
@@ -241,10 +241,10 @@ class Window:
                             minid = line
 
                 if miny < 0:
-                    linecoords = [t, round(9/10*self.vertical_space), t, 0]
+                    linecoords = [t, round(VERTICAL_SCALE*self.vertical_space), t, 0]
                     red = True
                 else:
-                    linecoords = [t, round(9/10*self.vertical_space), t, miny]
+                    linecoords = [t, round(VERTICAL_SCALE*self.vertical_space), t, miny]
                     if minid in self.pairs:
                         red = self.check_propagate_error(self.pairs[minid])
 
@@ -293,7 +293,7 @@ class Window:
             return
 
         if self.mode == "query":
-            print([round(9/10*self.vertical_space-l) for l in self.query(x)])
+            print([round(VERTICAL_SCALE*self.vertical_space-l) for l in self.query(x)])
         elif self.mode == "insert":
             self.insert(x, y)
             self.display_table()
@@ -327,7 +327,7 @@ class Window:
         if t in self.taken_x or y in self.taken_y:
             return
         # "Insert" of a delete-min event of value y at time t
-        if y >= 9/10*self.vertical_space:
+        if y >= VERTICAL_SCALE*self.vertical_space:
             miny = -1
             minid = -1
             for line in self.crossids:
@@ -344,10 +344,10 @@ class Window:
                 if self.check_propagate_error(self.pairs[minid]):
                     return
 
-            id = self.display_line(t, round(9/10*self.vertical_space), t, miny)
+            id = self.display_line(t, round(VERTICAL_SCALE*self.vertical_space), t, miny)
             self.upids.add(id)
 
-            self.line_quantized_coords[id] = [t, round(9/10*self.vertical_space), t, miny]
+            self.line_quantized_coords[id] = [t, round(VERTICAL_SCALE*self.vertical_space), t, miny]
             c = self.line_quantized_coords[minid]
             self.taken_x.add(t)
             self.line_quantized_coords[minid][2] = t
