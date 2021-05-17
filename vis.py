@@ -280,16 +280,16 @@ class Window:
                         self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='black', outline='black')
                 else:
                     if linetype == "up":
-                        self.canvas.itemconfig(closest, fill='light grey')
+                        self.canvas.itemconfig(closest, fill='light blue')
                         if self.last_highlight in self.crossids:
-                            self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='light grey', outline='light grey')
+                            self.canvas.itemconfig(self.linedotid[self.last_highlight], fill='light blue', outline='light blue')
                     elif linetype == "cross":
                         if closest in self.pairs and self.check_propagate_error(self.pairs[closest]):
                             self.canvas.itemconfig(closest, fill='red')
                             self.canvas.itemconfig(self.linedotid[closest], fill='red', outline='red')
                         else:
-                            self.canvas.itemconfig(closest, fill='light grey')
-                            self.canvas.itemconfig(self.linedotid[closest], fill='light grey', outline='light grey')
+                            self.canvas.itemconfig(closest, fill='light blue')
+                            self.canvas.itemconfig(self.linedotid[closest], fill='light blue', outline='light blue')
                             
                 self.last_highlight = closest
 
@@ -351,7 +351,7 @@ class Window:
                 if red:
                     self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="red")
                 else:
-                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="light grey")
+                    self.ghost_ray = self.display_line(linecoords[0], linecoords[1], linecoords[2], linecoords[3], fill="light blue")
             else:
                 pt1 = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)
                 pt2 = self.unquantize(linecoords[2], linecoords[3], self.w, self.h)
@@ -361,7 +361,7 @@ class Window:
                 if red:
                     self.canvas.itemconfig(self.ghost_ray, fill='red')
                 else:
-                    self.canvas.itemconfig(self.ghost_ray, fill='light grey')
+                    self.canvas.itemconfig(self.ghost_ray, fill='light blue')
 
             if y >= 9/10*self.vertical_space:
                 if self.ghost_dot is not None:
@@ -371,14 +371,14 @@ class Window:
                 if red:
                     self.ghost_dot = self.display_dot(linecoords[0], linecoords[1], fill="red", outline="red")
                 else:
-                    self.ghost_dot = self.display_dot(linecoords[0], linecoords[1], fill="light grey", outline="light grey")
+                    self.ghost_dot = self.display_dot(linecoords[0], linecoords[1], fill="light blue", outline="light blue")
             else:
                 pt = self.unquantize(linecoords[0], linecoords[1], self.w, self.h)        
                 self.canvas.coords(self.ghost_dot, pt[0]+3, pt[1]+3, pt[0]-3, pt[1]-3)
                 if red:
                     self.canvas.itemconfig(self.ghost_dot, fill='red', outline='red')
                 else:
-                    self.canvas.itemconfig(self.ghost_dot, fill='light grey', outline='light grey')
+                    self.canvas.itemconfig(self.ghost_dot, fill='light blue', outline='light blue')
 
 
     def clicked(self, event):
