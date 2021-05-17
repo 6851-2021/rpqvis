@@ -45,7 +45,7 @@ class Window:
         self.canvas.pack()
 
         self.help_btn = tk.Button(self.canvas, text="Help", command=self.popup)
-        self.mode_label = self.canvas.create_text(515, 15, font="Times 14", anchor="nw", text="Mode:")
+        self.mode_label = self.canvas.create_text(515, 15, font="Arial 14", anchor="nw", text="Mode:")
         self.delete_btn = tk.Radiobutton(self.canvas, text="Delete", command=self.toggle_delete, variable=self.mode, value="delete")
         self.insert_btn = tk.Radiobutton(self.canvas, text="Insert", command=self.toggle_insert, variable=self.mode, value="insert")
         self.query_btn = tk.Radiobutton(self.canvas, text="Query", command=self.toggle_query, variable=self.mode, value="query")
@@ -56,9 +56,9 @@ class Window:
 
         self.bottom_rect = self.canvas.create_rectangle(0, 270, 500, 300, fill="black")
         self.table_sep = self.canvas.create_line(500, 0, 500, 300, fill="black")
-        self.table_label = self.canvas.create_text(515, 145, font="Times 14", anchor="nw",
+        self.table_label = self.canvas.create_text(515, 145, font="Arial 14", anchor="nw",
             text="Elements \nat t=∞:")
-        self.table_text = self.canvas.create_text(520, 182, font="Times 12", anchor="nw", text="")
+        self.table_text = self.canvas.create_text(520, 182, font="Arial 12", anchor="nw", text="")
         
         self.pairs = dict()
 
@@ -648,8 +648,8 @@ y = (hs/2) - 150
 splash.geometry("600x300+%d+%d" % (x, y))
 
 
-splash_label= tk.Label(splash, text= "rpqvis", fg= "black", font = ('Times New Roman', 40)).pack(pady=60)
-click_label = tk.Label(splash, text= "click to begin", fg= "black", font = ('Times New Roman', 20)).pack(pady=20)
+splash_label= tk.Label(splash, text= "rpqvis", fg= "black", font = ('Arial', 40)).pack(pady=60)
+click_label = tk.Label(splash, text= "click to begin", fg= "black", font = ('Arial', 20)).pack(pady=20)
 
 def mainWin(_=None):
     x = splash.winfo_x()
