@@ -1,0 +1,7 @@
+rpqvis
+======
+
+.. automodule:: vis
+   :members:
+   :undoc-members:
+   :show-inheritance:

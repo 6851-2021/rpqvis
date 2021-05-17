@@ -5,7 +5,15 @@ TABLE_SCALE = 5.0 / 6
 VERTICAL_SCALE = 9.0 / 10
 
 class Window:
+    """
+    The main window; this will hold all widgets after leaving the splash screen.
+
+    :param x: x position of splash screen; this helps ensure the window is in the same place as the splash screen
+    :param y: y position of the splash screen
+
+        """
     def __init__(self, x, y):
+        
         self.vertical_space = 50
         self.horizontal_space = 100
 
@@ -76,6 +84,10 @@ class Window:
         self.window.mainloop()
 
     def popup(self):
+        """
+        Open the help popup.
+        """
+
         inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through (Step) is enabled, propagation of operations is slowed down so you can see changes happening.".split()
 
 
@@ -109,25 +121,62 @@ class Window:
         popup.mainloop()
 
     def quantize(self, t, y, w, h):
+        """
+        Map actual location onto a lattice; return the nearest lattice point.
+
+        :param t: actual t coordinate
+        :param y: actual y coordinate
+        :param w: width of window
+        :param h: height of window
+        """
         qt = round(t/(w*TABLE_SCALE)*self.horizontal_space)
         qy = round(y/h*self.vertical_space)
         return qt, qy
 
     def quantize_line(self, c, w, h):
+        """
+        Helper function; map line endpoints onto a lattice.
+
+        :param c: actual line coordinates
+        :param w: width of window
+        :param h: height of window
+        """
         pt1 = self.quantize(c[0], c[1], w, h)
         pt2 = self.quantize(c[2], c[3], w, h)
         return (pt1[0], pt1[1], pt2[0], pt2[1])
 
     def unquantize(self, qt, qy, w, h):
+        """
+        Map lattice point to actual location.
+
+        :param qt: "quantized" t coordinate
+        :param qy: "quantized" y coordinate
+        :param w: width of window
+        :param h: height of window
+        """
         t = round(qt/self.horizontal_space*(w*TABLE_SCALE))
         y = round(qy/self.vertical_space*h)
         return t, y
 
     def display_table(self, t=99):
+        """
+        Set table text to result of query at time t.
+
+        :param t: time of query
+        """
         self.canvas.itemconfig(self.table_text, text=
             '\n'.join([str(round(9/10*self.vertical_space-l)) for l in self.query(t)]))
 
     def display_line(self, qt1, qy1, qt2, qy2, fill="black"):
+        """
+        Display a line, given "quantized" endpoint coordinates.
+
+        :param qt1: "quantized" t coordinate of first endpoint
+        :param qy1: "quantized" y coordinate of first endpoint
+        :param qt2: "quantized" t coordinate of second endpoint
+        :param qy2: "quantized" y coordinate of second endpoint
+        :param fill: color of line
+        """
         t1, y1 = self.unquantize(qt1, qy1, self.w, self.h)
         t2, y2 = self.unquantize(qt2, qy2, self.w, self.h)
 
@@ -135,11 +184,24 @@ class Window:
         return id
 
     def display_dot(self, qt, qy, fill="black", outline="black"):
+        """
+        Display a dot, given "quantized" coordinates.
+
+        :param qt: "quantized" t coordinate
+        :param qy: "quantized" y coordinate
+        :param fill: color of dot
+        :param outline: color of outline of dot
+        """
         t, y = self.unquantize(qt, qy, self.w, self.h)
         id = self.canvas.create_oval(t-3, y-3, t+3, y+3, fill=fill, outline=outline)
         return id
 
     def scale_line(self, id):
+        """
+        Resize and shift an existing line, based on lattice coordinates.
+
+        :param id: tkinter ID number of line
+        """
         c = self.line_quantized_coords[id]
         pt1 = self.unquantize(c[0], c[1], self.w, self.h)
         pt2 = self.unquantize(c[2], c[3], self.w, self.h)
@@ -147,11 +209,21 @@ class Window:
         self.canvas.coords(id, pt1[0], pt1[1], pt2[0], pt2[1])
 
     def scale_dot(self, id):
+        """
+        Shift an existing dot, based on lattice coordinates.
+
+        :param id: tkinter ID number of dot
+        """
         c = self.dot_quantized_coords[id]
         pt1 = self.unquantize(c[0], c[1], self.w, self.h)
         self.canvas.coords(id, pt1[0]+3, pt1[1]+3, pt1[0]-3, pt1[1]-3)
 
     def query(self, t):
+        """
+        Return items in the priority queue at time t.
+
+        :param t: time of query
+        """
         existlist = []
         for line in self.crossids:
             c = self.line_quantized_coords[line]
@@ -160,7 +232,12 @@ class Window:
 
         return sorted(existlist, reverse=False)
 
-    def resize(self, event):        
+    def resize(self, event):  
+        """
+        Shift and resize on-screen graphics if the window is resized.
+
+        :param event: tkinter event, holding new width and height
+        """      
         rw = float(event.width)/self.w
         rh = float(event.height)/self.h
 
@@ -193,10 +270,12 @@ class Window:
         self.step_btn.place(x=button_x, y=110)
         self.canvas.coords(self.mode_label, event.width*TABLE_SCALE+15, 15)
     
-
-
     def check_propagate_error(self, id):
-        # insert a delete-min
+        """
+        Check if the insertion of a delete-min would cause another delete-min to hit the ceiling. This check is done by using an existing delete-min; it will ignore its current pair and propagate to the next lowest available insert.
+
+        :param id: tkinter ID of the delete-min line
+        """
         [t, y, _, _] = self.line_quantized_coords[id]
         if y >= 9/10*self.vertical_space:
             miny = -1
@@ -218,6 +297,11 @@ class Window:
 
 
     def motion(self, event):
+        """
+        Respond to mouse motion. In insert mode, there is a shadow ray that is blue if the insert is allowed and red otherwise. Motion in the bottom bar corresponds to an upward ray; otherwise, there is a horizontal ray. In delete mode, hovering over an existing line turns the lines red or blue, depending on if the deletion is allowed. In query mode, motion triggers a query of the current t location of the mouse.
+
+        :param event: tkinter event, holding location of mouse
+        """
 
         if event.x >= self.w * TABLE_SCALE - 5:
             if self.last_highlight != -1:
@@ -380,6 +464,11 @@ class Window:
 
 
     def clicked(self, event):
+        """
+        Respond to mouse clicks. In insert and delete mode, if the action is valid, a ray will be inserted or deleted.
+
+        :param event: tkinter event, holding location of mouse
+        """
         if event.x >= self.w * TABLE_SCALE - 5:
             return
 
@@ -399,18 +488,33 @@ class Window:
             self.display_table()
 
     def toggle_delete(self):
+        """
+        Helper function; toggles to delete mode from a button press.
+        """
         self.toggle(None, "d")
 
     def toggle_insert(self):
+        """
+        Helper function; toggles to insert mode from a button press.
+        """
         self.toggle(None, "i")
 
     def toggle_step(self):
+        """
+        Helper function; toggles stepthrough mode from a button press.
+        """
         self.toggle(None, "s")
 
     def toggle_query(self):
+        """
+        Helper function; toggles to query mode from a button press.
+        """
         self.toggle(None, "q")
 
     def toggle(self, event, key=None):
+        """
+        Toggles between modes; resets some values and erases shadow rays.
+        """
         if key is None:
             key = event.keysym
         if time.time() - self.last_toggle > .1:
@@ -452,6 +556,13 @@ class Window:
             self.display_table()
 
     def insert(self, t, y):
+        """
+        Insert a delete-min or an insert. Nothing is done if the action is invalid.
+
+        :param t: quantized t coordinate of the mouse click
+        :param y: quantized y coordinate of the mouse click
+        """
+
         # don't allow same coords
         if t in self.taken_x or y in self.taken_y:
             return
@@ -563,6 +674,12 @@ class Window:
         self.display_table()
 
     def delete(self, t, y):
+        """
+        Delete a delete-min or an insert. Nothing is done if the action is invalid.
+
+        :param t: quantized t coordinate of the mouse click
+        :param y: quantized y coordinate of the mouse click
+        """
         # Delete a deletemin
         if self.last_highlight in self.upids:
             if self.last_highlight != -1:
@@ -637,32 +754,32 @@ class Window:
         self.display_table()
 
 
+if __name__ == "main":
+
+    # splash screen; 
+
+    splash = tk.Tk()
+
+    splash.title("rpqvis")
+    ws = splash.winfo_screenwidth()
+    hs = splash.winfo_screenheight()
+    x = (ws/2) - 300
+    y = (hs/2) - 150
+    splash.geometry("600x300+%d+%d" % (x, y))
 
 
-# splash screen; 
+    splash_label= tk.Label(splash, text= "rpqvis", fg= "black", font = ('TkDefaultFont', 40)).pack(pady=60)
+    click_label = tk.Label(splash, text= "click to begin", fg= "black", font = ('TkDefaultFont', 20)).pack(pady=20)
 
-splash = tk.Tk()
+    def mainWin(_=None):
+        x = splash.winfo_x()
+        y = splash.winfo_y()
+        splash.destroy()
+        Window(x, y)
 
-splash.title("rpqvis")
-ws = splash.winfo_screenwidth()
-hs = splash.winfo_screenheight()
-x = (ws/2) - 300
-y = (hs/2) - 150
-splash.geometry("600x300+%d+%d" % (x, y))
+    splash.bind("<Button-1>", mainWin)
+    # splash.after(3000, mainWin)
+    splash.minsize(600, 300)
+    splash.maxsize(600, 300)
 
-
-splash_label= tk.Label(splash, text= "rpqvis", fg= "black", font = ('TkDefaultFont', 40)).pack(pady=60)
-click_label = tk.Label(splash, text= "click to begin", fg= "black", font = ('TkDefaultFont', 20)).pack(pady=20)
-
-def mainWin(_=None):
-    x = splash.winfo_x()
-    y = splash.winfo_y()
-    splash.destroy()
-    Window(x, y)
-
-splash.bind("<Button-1>", mainWin)
-# splash.after(3000, mainWin)
-splash.minsize(600, 300)
-splash.maxsize(600, 300)
-
-splash.mainloop()
+    splash.mainloop()
