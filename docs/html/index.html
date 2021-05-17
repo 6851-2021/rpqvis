@@ -1,0 +1,348 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>rpqvis &#8212; rpqvis  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-vis">
+<span id="rpqvis"></span><h1>rpqvis<a class="headerlink" href="#module-vis" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="vis.Window">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">vis.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The main window; this will hold all widgets after leaving the splash screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x position of splash screen; this helps ensure the window is in the same place as the splash screen</p></li>
+<li><p><strong>y</strong> – y position of the splash screen</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.check_propagate_error">
+<span class="sig-name descname"><span class="pre">check_propagate_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.check_propagate_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the insertion of a delete-min would cause another delete-min to hit the ceiling. This check is done by using an existing delete-min; it will ignore its current pair and propagate to the next lowest available insert.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id</strong> – tkinter ID of the delete-min line</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.clicked">
+<span class="sig-name descname"><span class="pre">clicked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.clicked" title="Permalink to this definition">¶</a></dt>
+<dd><p>Respond to mouse clicks. In insert and delete mode, if the action is valid, a ray will be inserted or deleted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> – tkinter event, holding location of mouse</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a delete-min or an insert. Nothing is done if the action is invalid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – quantized t coordinate of the mouse click</p></li>
+<li><p><strong>y</strong> – quantized y coordinate of the mouse click</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.display_dot">
+<span class="sig-name descname"><span class="pre">display_dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.display_dot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display a dot, given “quantized” coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qt</strong> – “quantized” t coordinate</p></li>
+<li><p><strong>qy</strong> – “quantized” y coordinate</p></li>
+<li><p><strong>fill</strong> – color of dot</p></li>
+<li><p><strong>outline</strong> – color of outline of dot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.display_line">
+<span class="sig-name descname"><span class="pre">display_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qt1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qt2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.display_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display a line, given “quantized” endpoint coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qt1</strong> – “quantized” t coordinate of first endpoint</p></li>
+<li><p><strong>qy1</strong> – “quantized” y coordinate of first endpoint</p></li>
+<li><p><strong>qt2</strong> – “quantized” t coordinate of second endpoint</p></li>
+<li><p><strong>qy2</strong> – “quantized” y coordinate of second endpoint</p></li>
+<li><p><strong>fill</strong> – color of line</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.display_table">
+<span class="sig-name descname"><span class="pre">display_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">99</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.display_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set table text to result of query at time t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> – time of query</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert a delete-min or an insert. Nothing is done if the action is invalid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – quantized t coordinate of the mouse click</p></li>
+<li><p><strong>y</strong> – quantized y coordinate of the mouse click</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.motion">
+<span class="sig-name descname"><span class="pre">motion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.motion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Respond to mouse motion. In insert mode, there is a shadow ray that is blue if the insert is allowed and red otherwise. Motion in the bottom bar corresponds to an upward ray; otherwise, there is a horizontal ray. In delete mode, hovering over an existing line turns the lines red or blue, depending on if the deletion is allowed. In query mode, motion triggers a query of the current t location of the mouse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> – tkinter event, holding location of mouse</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.popup">
+<span class="sig-name descname"><span class="pre">popup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.popup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open the help popup.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.quantize">
+<span class="sig-name descname"><span class="pre">quantize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.quantize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map actual location onto a lattice; return the nearest lattice point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – actual t coordinate</p></li>
+<li><p><strong>y</strong> – actual y coordinate</p></li>
+<li><p><strong>w</strong> – width of window</p></li>
+<li><p><strong>h</strong> – height of window</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.quantize_line">
+<span class="sig-name descname"><span class="pre">quantize_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.quantize_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function; map line endpoints onto a lattice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> – actual line coordinates</p></li>
+<li><p><strong>w</strong> – width of window</p></li>
+<li><p><strong>h</strong> – height of window</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return items in the priority queue at time t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> – time of query</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.resize">
+<span class="sig-name descname"><span class="pre">resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.resize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shift and resize on-screen graphics if the window is resized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> – tkinter event, holding new width and height</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.scale_dot">
+<span class="sig-name descname"><span class="pre">scale_dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.scale_dot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shift an existing dot, based on lattice coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id</strong> – tkinter ID number of dot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.scale_line">
+<span class="sig-name descname"><span class="pre">scale_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.scale_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resize and shift an existing line, based on lattice coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id</strong> – tkinter ID number of line</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.toggle">
+<span class="sig-name descname"><span class="pre">toggle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.toggle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggles between modes; resets some values and erases shadow rays.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.toggle_delete">
+<span class="sig-name descname"><span class="pre">toggle_delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.toggle_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function; toggles to delete mode from a button press.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.toggle_insert">
+<span class="sig-name descname"><span class="pre">toggle_insert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.toggle_insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function; toggles to insert mode from a button press.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.toggle_query">
+<span class="sig-name descname"><span class="pre">toggle_query</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.toggle_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function; toggles to query mode from a button press.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.toggle_step">
+<span class="sig-name descname"><span class="pre">toggle_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.toggle_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function; toggles stepthrough mode from a button press.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="vis.Window.unquantize">
+<span class="sig-name descname"><span class="pre">unquantize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#vis.Window.unquantize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map lattice point to actual location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qt</strong> – “quantized” t coordinate</p></li>
+<li><p><strong>qy</strong> – “quantized” y coordinate</p></li>
+<li><p><strong>w</strong> – width of window</p></li>
+<li><p><strong>h</strong> – height of window</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">rpqvis</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Michelle Jiang, Emily Liu.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
