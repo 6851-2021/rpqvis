@@ -247,6 +247,7 @@ class Window:
             self.query_id = self.display_line(t, VERTICAL_SCALE*self.vertical_space, t, curr_min)
 
             self.canvas.itemconfig(self.query_id, fill='green')
+            self.canvas.itemconfig(self.table_label, text="Elements \nat t=%d:" % t)
 
         # color changes on hover, for "Delete" events only
         elif self.mode == "delete":
@@ -450,6 +451,7 @@ class Window:
                 self.ghost_dot = None
             self.last_highlight = -1
             self.display_table()
+            self.canvas.itemconfig(self.table_label, text="Elements \nat t=∞:")
 
     def insert(self, t, y):
         # don't allow same coords
