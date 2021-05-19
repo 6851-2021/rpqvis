@@ -64,7 +64,7 @@ class Window:
         self.table_sep = self.canvas.create_line(500, 0, 500, 300, fill="black")
         self.table_label = self.canvas.create_text(515, 145, font="14", anchor="nw",
             text="Elements \nat t=∞:")
-        self.table_text = self.canvas.create_text(520, 182, font="12", anchor="nw", text="")
+        self.table_text = self.canvas.create_text(520, 185, font="12", anchor="nw", text="")
         
         self.pairs = dict()
 
@@ -74,10 +74,10 @@ class Window:
         self.h = 300
         self.step_btn = tk.Button(self.canvas, text="Step", command=self.toggle_step)
 
-        self.help_btn.place(x=520, y=270, width=60)
-        self.insert_btn.place(x=520, y=35, width=60)
-        self.delete_btn.place(x=520, y=60, width=60)
-        self.query_btn.place(x=520, y=85, width=60)
+        self.help_btn.place(x=520, y=270, width=70)
+        self.insert_btn.place(x=520, y=35, width=70)
+        self.delete_btn.place(x=520, y=60, width=70)
+        self.query_btn.place(x=520, y=85, width=70)
         self.step_btn.place(x=520, y=110, width=60)
         self.canvas.addtag_all("all")
 
@@ -756,7 +756,7 @@ class Window:
         self.display_table()
 
 
-if __name__ == "main":
+if __name__ == "__main__":
 
     # splash screen; 
 
