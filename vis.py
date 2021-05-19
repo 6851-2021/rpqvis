@@ -88,7 +88,7 @@ class Window:
         Open the help popup.
         """
 
-        inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through (Step) is enabled, propagation of operations is slowed down so you can see changes happening.".split()
+        inst = "rpqvis is a visualization of retroactive priority queues. In Insert mode, you can insert \"insert\" operations by pressing on the white part of the screen and insert \"delete-min\" operations by pressing in the bottom black bar.  In Delete mode you can delete those operations by hovering over lines and clicking. In Query mode you can query what is in the priority queue at any time in history. If step-through (Step) is enabled, propagation of operations is slowed down so you can see changes happening.\n\nDocumentation of the source code can be found at https://6851-2021.github.io/rpqvis/".split()
 
 
         x = self.window.winfo_x()+self.window.winfo_width()/2-200
@@ -756,7 +756,7 @@ class Window:
         self.display_table()
 
 
-if __name__ == "main":
+if __name__ == "__main__":
 
     # splash screen; 
 
